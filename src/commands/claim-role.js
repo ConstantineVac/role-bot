@@ -1,4 +1,3 @@
-// claimrole.js
 module.exports = {
   data: {
     name: 'claimrole',
@@ -32,6 +31,11 @@ module.exports = {
     ],
   },
   async execute(interaction) {
+    const claimOption = interaction.options.getSubcommand();
+    const roleColor = interaction.options.getString('color');
+    const roleName = interaction.options.getString('name');
+    const roleIcon = interaction.options.getString('icon');
+
     // const boosterRole = interaction.guild.roles.cache.find(
     //   (role) => role.name === 'Booster',
     // );
@@ -44,11 +48,6 @@ module.exports = {
       return interaction.reply({content: 'You are not a server booster.', ephemeral: true});
     }
 
-    const claimOption = interaction.options.getSubcommand();
-    const roleColor = interaction.options.getString('color');
-    const roleName = interaction.options.getString('name');
-    const roleIcon = interaction.options.getString('icon');
-
     try {
       // Create the role with specified options or defaults
       const roleOptions = {
@@ -56,12 +55,26 @@ module.exports = {
         color: roleColor || 'BLUE',
       };
 
+      // Create the role
+      const createdRole = await interaction.guild.roles.create(roleOptions);
+
       // Add the icon to the role name if provided
       if (roleIcon) {
-        roleOptions.name = `${roleOptions.name} ${roleIcon}`;
-      }
+        console.log(roleIcon)
+        // Check if roleIcon is a custom emoji (e.g., <:emojiName:emojiID>)
+        const emojiMatch = roleIcon.match(/<a?:.+:(\d+)>/);
 
-      const createdRole = await interaction.guild.roles.create(roleOptions);
+        if (emojiMatch && emojiMatch[1]) {
+          const emojiId = emojiMatch[1];
+          roleOptions.name = `${roleOptions.name} <:${emojiId}>`;
+
+          // Set the role icon using the emoji ID
+          await createdRole.setIcon(`https://cdn.discordapp.com/emojis/${emojiId}.png`);
+          console.log(emojiId);
+        } else {
+          roleOptions.name = `${roleOptions.name} ${roleIcon}`;
+        }
+      }
 
       // Add the role to the member
       await interaction.member.roles.add(createdRole);

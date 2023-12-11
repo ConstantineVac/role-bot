@@ -1,10 +1,11 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const fs = require('fs');
 const path = require('path');
 const { connect, getDatabase } = require('./database');  // Import the connect function from the database module
+const TicTacToe = require("discord-tictactoe")
 
 
 const token = process.env.TOKEN;
@@ -20,7 +21,7 @@ const client = new Client({
   ],
 });
 
-client.commands = new Map(); // Move this line here
+client.commands = new Map();
 
 const commands = [];
 const commandFiles = fs.readdirSync(path.join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
@@ -81,7 +82,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
   const doc = await getDatabase().collection('boosterRoles').findOne({ name: 'config' });
   const channelId = doc.channel;
   const channel = client.channels.cache.get(channelId);
-  console.log(channel);
+  //console.log(channel);
   const wasBoosting = oldMember.premiumSince;
   const isBoosting = newMember.premiumSince;
 
@@ -98,6 +99,16 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
     channel.send({ ephemeral:true,embeds:[embed], content:`${newMember} thank you for boosting this server💖.\nThese are the instructions on how to make your custom role.`})
   }
 });
+
+// TicTacToe game.
+new TicTacToe({
+  token:token,
+  language:"en",
+  command:"tictactoe",
+  commandOptionName:"opponent",
+  textCommand:"!ttt",
+  aiDifficulty:"Hard"
+ }).login().then(()=> console.log("TicTacToe Up & running"))
 
 
 client.login(token);

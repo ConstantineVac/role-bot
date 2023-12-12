@@ -60,6 +60,19 @@ const rest = new REST({ version: '9' }).setToken(token);
   }
 })();
 
+// register commands to new server.
+client.on('guildCreate', async (guild) => {
+  console.log(`Joined a new guild: ${guild.id}`);
+  try {
+    await rest.put(
+      Routes.applicationGuildCommands(clientId, guild.id),
+      { body: commands },
+    );
+    console.log(`Successfully reloaded application (/) commands for guild: ${guild.id}`);
+  } catch (error) {
+    console.error(error);
+  }
+});
 
 // Commands
 client.on('interactionCreate', async (interaction) => {
